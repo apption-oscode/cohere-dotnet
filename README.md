@@ -22,47 +22,73 @@ Install-Package CohereDotnet
 
 2. **Initialize the Client**:
 
-```csharp
-using Cohere;
-using Cohere.Models;
+    ```csharp
+    using Cohere;
+    using Cohere.Models;
 
-var apiKey = "your-api-key";
-var cohereClient = new CohereClient(apiKey);
-```
+    var apiKey = "your-api-key";
+    var cohereClient = new CohereClient(apiKey);
+    ```
 
 3. **Example Usage**:
 
 - **Generate Text**:
 
-```csharp
-var response = await cohereClient.GenerateAsync(new GenerateRequest
-{
-    Prompt = "Once upon a time",
-    MaxTokens = 50
-});
-Console.WriteLine(response.GeneratedText);
-```
-
-- **Get Embeddings**:
-
-```csharp
-var response = await cohereClient.EmbedAsync(new EmbedRequest
-{
-    Texts = new List<string> { "This is a sentence to embed." }
-});
-Console.WriteLine(response.Embeddings.First());
-```
+    ```csharp
+    var response = await cohereClient.ChatAsync(new GenerateRequest
+    {
+        Messages = [
+            {
+                "role": "user",
+                "content": "hello world!"
+            }
+        ]
+        MaxTokens = 50
+    });
+    Console.WriteLine(response.FinishReason);
+    ```
 
 - **Classify Text**:
 
-```csharp
-var response = await cohereClient.ClassifyAsync(new ClassifyRequest
-{
-    Inputs = new List<string> { "Is this text positive or negative?" },
-    Labels = new List<string> { "Positive", "Negative" }
-});
-Console.WriteLine(response.Classifications.First().Prediction);
-```
+    ```csharp
+    var response = await cohereClient.ClassifyAsync(new ClassifyRequest
+    {
+        Examples = new List<(string text, string label)>
+        {
+            (text="Dermatologists don't like her!", label="Spam"),
+            (text="'Hello, open to this?'", label="Spam"),
+            (text="Your parcel will be delivered today", label="Not spam"),
+            (text="Review changes to our Terms and Conditions", label="Not spam"),
+        };
+        Inputs = new List<string>
+        {
+            "Confirm your email address",
+            "hey i need u to send some $"
+        };
+    });
+    Console.WriteLine(response.Classifications.First().Prediction);
+    ```
+
+- **Rerank Text**:
+
+    ```csharp
+    var response = await cohereClient.RerankAsync(new RerankRequest
+    {
+        Query = "What is the capital of the United States?"
+        Documents = new List<string>
+        {
+            "Carson City is the capital city of the American state of Nevada.",
+            "The Commonwealth of the Northern Mariana Islands is a group of islands in the Pacific Ocean. Its capital is Saipan.",
+            "Capitalization or capitalisation in English grammar is the use of a capital letter at the start of a word. English usage varies from capitalization in other languages.",
+            "Washington, D.C. (also known as simply Washington or D.C., and officially as the District of Columbia) is the capital of the United States. It is a federal district.",
+            "Capital punishment (the death penalty) has existed in the United States since beforethe United States was a country. As of 2017, capital punishment is legal in 30 of the 50 states.",
+        }
+    });
+    foreach (var result in Results)
+    {
+        Console.WriteLine(result.ToString());
+    }
+    ```
 
 ## Documentation
 
